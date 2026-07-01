@@ -2,31 +2,14 @@ import streamlit as st
 from PyPDF2 import PdfReader
 import pandas as pd
 import base64
-
 import os
-
-# Update imports for LangChain
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-# from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
-# updated
 from langchain_huggingface import HuggingFaceEmbeddings
-
-
-
-
 from langchain_google_genai import ChatGoogleGenerativeAI
-
-
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
-
-
-
-
 from datetime import datetime
-
-
 import asyncio
 
 try:
@@ -49,17 +32,12 @@ def get_text_chunks(text, model_name):
     chunks = text_splitter.split_text(text)
     return chunks
 
-
-# Updated with huggingface embeddings
-
 def get_vector_store(text_chunks, model_name, api_key=None):
     if model_name == "Google AI":
-        # Replace Gemini with HuggingFace all-MiniLM
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
     vector_store.save_local("faiss_index")
     return vector_store
-
 
 def get_conversational_chain(model_name, vectorstore=None, api_key=None):
     if model_name == "Google AI":
@@ -97,8 +75,6 @@ def user_input(user_question, model_name, api_key, pdf_docs, conversation_histor
         pdf_names = [pdf.name for pdf in pdf_docs] if pdf_docs else []
         conversation_history.append((user_question_output, response_output, model_name, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ", ".join(pdf_names)))
 
-        # conversation_history.append((user_question_output, response_output, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ", ".join(pdf_names)))
-
     with st.chat_message("user"):
         st.markdown(user_question_output)
 
@@ -121,7 +97,6 @@ def user_input(user_question, model_name, api_key, pdf_docs, conversation_histor
     if len(st.session_state.conversation_history) > 0:
         df = pd.DataFrame(st.session_state.conversation_history, columns=["Question", "Answer", "Model", "Timestamp", "PDF Name"])
 
-        # df = pd.DataFrame(st.session_state.conversation_history, columns=["Question", "Answer", "Timestamp", "PDF Name"])
         csv = df.to_csv(index=False)
         b64 = base64.b64encode(csv.encode()).decode()  # Convert to base64
         href = f'<a href="data:file/csv;base64,{b64}" download="conversation_history.csv"><button>Download conversation history as CSV file</button></a>'
