@@ -19,7 +19,6 @@ def get_pdf_text(pdf_docs):
     return text
 
 def get_text_chunks(text):
-    # Fixed chunk size and overlap (100 overlap on 100 size means 0 progress)
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     chunks = text_splitter.split_text(text)
     return chunks
@@ -39,14 +38,12 @@ def get_conversational_chain(api_key):
 
     Answer:
     """
-    # Using the correct Gemini 3.5 Flash model
     model = ChatGoogleGenerativeAI(model="gemini-3.5-flash", temperature=0.3, google_api_key=api_key)
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
     chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
     return chain
 
 def user_input(user_question, api_key, pdf_names):
-    # Load the already saved vector store instead of recreating it
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
